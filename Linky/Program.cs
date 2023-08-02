@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -14,7 +14,7 @@ links.Add("aws", new DynamicLink
     AppleMobileLink = "https://apps.apple.com/us/app/aws-console/id580990573"
 });
 
-app.MapGet("/{shortIdentifier}", (string shortIdentifier, HttpContext http) =>
+app.MapGet("/{shortIdentifier}", async Task<Results<NotFound, RedirectHttpResult>>(string shortIdentifier, HttpContext http) =>
 {
     if (links.TryGetValue(shortIdentifier, out var dynamicLink))
     {
@@ -30,14 +30,10 @@ app.MapGet("/{shortIdentifier}", (string shortIdentifier, HttpContext http) =>
             link = dynamicLink.AppleMobileLink;
         }
 
-        http.Response.StatusCode = 301;
-        http.Response.Headers.Location = new StringValues(link);
-        http.Response.WriteAsync("Redirecting...");
-        return;
+        return TypedResults.Redirect(link, permanent: false);
     }
 
-    http.Response.StatusCode = 404;
-    http.Response.WriteAsync("Page not found");
+    return TypedResults.NotFound();
 });
 
 app.Run();
