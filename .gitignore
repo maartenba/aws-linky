@@ -20,3 +20,5 @@ contentModel.xml
 modules.xml
 riderModule.iml
 workspace.xml
+
+.aws-sam/
