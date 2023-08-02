@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Linky SAM template
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+
+Resources:
+  LinkyFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: dotnet7
+    Properties:
+      CodeUri: ./
+      #Handler: Linky3
+      #Runtime: dotnet6
+      Handler: app.handler
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Policies:
+        - AWSLambda_FullAccess
+      Events:
+        ProxyResource:
+          Type: HttpApi
+          Properties:
+            Path: "/{proxy+}"
+            Method: ANY
+        RootResource:
+          Type: HttpApi
+          Properties:
+            Path: "/"
+            Method: ANY
+
+Outputs:
+  RootResourceUrl:
+    Description: "Production API URL"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
