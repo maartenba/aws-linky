@@ -4,6 +4,14 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+
+        <AssemblyName>bootstrap</AssemblyName>
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <SelfContained>true</SelfContained>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.6.0" />
+    </ItemGroup>
 
 </Project>
