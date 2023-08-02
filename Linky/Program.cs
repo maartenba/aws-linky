@@ -1,25 +1,19 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+builder.Services.AddDbContext<LinkyDbContext>(options => options
+    .UseMySql(builder.Configuration.GetConnectionString("db"), new MySqlServerVersion(new Version(5, 7, 12))));
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
-
-var links = new Dictionary<string, DynamicLink>(StringComparer.OrdinalIgnoreCase);
-links.Add("aws", new DynamicLink
+app.MapGet("/{shortIdentifier}", async Task<Results<NotFound, RedirectHttpResult>>(string shortIdentifier, HttpContext http, LinkyDbContext db) =>
 {
-    ShortIdentifier = "aws",
-    WebLink = "https://aws.amazon.com/console/",
-    AndroidMobileLink = "https://play.google.com/store/apps/details?id=com.amazon.aws.console.mobile",
-    AppleMobileLink = "https://apps.apple.com/us/app/aws-console/id580990573"
-});
-
-app.MapGet("/{shortIdentifier}", async Task<Results<NotFound, RedirectHttpResult>>(string shortIdentifier, HttpContext http) =>
-{
-    if (links.TryGetValue(shortIdentifier, out var dynamicLink))
+    var dynamicLink = await db.Links.FirstOrDefaultAsync(it => it.ShortIdentifier == shortIdentifier.ToLowerInvariant());
+    if (dynamicLink != null)
     {
         var link = dynamicLink.WebLink;
 
@@ -43,9 +37,44 @@ app.Run();
 
 public class DynamicLink
 {
+    [Key]
     public int Id { get; set; }
+
+    [MaxLength(10)]
     public string ShortIdentifier { get; set; }
+
+    [MaxLength(400)]
     public string WebLink { get; set; }
+
+    [MaxLength(400)]
     public string? AndroidMobileLink { get; set; }
+
+    [MaxLength(400)]
     public string? AppleMobileLink { get; set; }
+}
+
+public class LinkyDbContext : DbContext
+{
+    public DbSet<DynamicLink> Links { get; set; }
+
+    public LinkyDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<DynamicLink>()
+            .HasIndex(it => it.ShortIdentifier);
+
+        modelBuilder.Entity<DynamicLink>()
+            .HasData(new DynamicLink
+            {
+                Id = 1,
+                ShortIdentifier = "aws",
+                WebLink = "https://aws.amazon.com/console/",
+                AndroidMobileLink = "https://play.google.com/store/apps/details?id=com.amazon.aws.console.mobile",
+                AppleMobileLink = "https://apps.apple.com/us/app/aws-console/id580990573"
+            });
+    }
 }

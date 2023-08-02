@@ -8,10 +8,17 @@
         <AssemblyName>bootstrap</AssemblyName>
         <PublishReadyToRun>true</PublishReadyToRun>
         <SelfContained>true</SelfContained>
+        <UserSecretsId>95b1212a-07b0-4969-bbcd-d5e9c1bcd5b0</UserSecretsId>
     </PropertyGroup>
     
     <ItemGroup>
         <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.6.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
     </ItemGroup>
 
 </Project>
