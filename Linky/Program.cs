@@ -18,8 +18,20 @@ app.MapGet("/{shortIdentifier}", (string shortIdentifier, HttpContext http) =>
 {
     if (links.TryGetValue(shortIdentifier, out var dynamicLink))
     {
+        var link = dynamicLink.WebLink;
+
+        var userAgent = http.Request.Headers.UserAgent.ToString();
+        if (!string.IsNullOrEmpty(userAgent) && userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase))
+        {
+            link = dynamicLink.AndroidMobileLink;
+        }
+        else if (!string.IsNullOrEmpty(userAgent) && (userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase) || userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase)))
+        {
+            link = dynamicLink.AppleMobileLink;
+        }
+
         http.Response.StatusCode = 301;
-        http.Response.Headers.Location = new StringValues(dynamicLink.WebLink);
+        http.Response.Headers.Location = new StringValues(link);
         http.Response.WriteAsync("Redirecting...");
         return;
     }
